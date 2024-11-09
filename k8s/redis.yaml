@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+spec:
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-server
+  template:
+    metadata:
+      labels:
+        app: redis-server
+    spec:
+      containers:
+      - name: redis-server
+        image: redis
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: "150m"
+            memory: "100Mi"
+          requests:
+            cpu: "150m"
+            memory: "100Mi"
+        args: ["--appendonly", "yes", "--requirepass", "$(REDIS_PASSWORD)"]
+        ports:
+          - name: tcp
+            containerPort: 6379
+        volumeMounts:
+          - name: redis-data
+            mountPath: /data
+        env:
+          - name: REDIS_PASSWORD
+            value: admin
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis-server
+  name: redis-svc
+spec:
+  ports:
+  - port: 6379
+    protocol: TCP
+    targetPort: tcp
+    name: tcp
+  selector:
+    app: redis-server
+  type: ClusterIP

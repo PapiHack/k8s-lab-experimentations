@@ -1,0 +1,9 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: acme-lb-pool
+  namespace: metallb-system
+spec:
+# TODO: To be updated according to the real env
+  addresses:
+  - 192.168.1.30-192.168.1.35

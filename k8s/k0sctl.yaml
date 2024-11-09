@@ -1,0 +1,35 @@
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: k0s-cluster
+  # name: acme-k0s-cluster
+spec:
+  k0s:
+    version: 1.31.2+k0s.0 # Ne marche pas, à retester later
+    # version: v1.31.1+k0s.1
+    # version: 1.29.10+k0s.0
+    # version: 1.30.6+k0s.0
+    # dynamicConfig: false
+  hosts:
+  - ssh:
+      address: 192.168.1.25
+      user: root
+      port: 22
+      keyPath: ~/.ssh/id_rsa_k0s
+    role: controller+worker
+    privateInterface: enp0s8
+  - ssh:
+      address: 192.168.1.6
+      user: root
+      port: 22
+      keyPath: ~/.ssh/id_rsa_k0s
+    role: worker
+    privateInterface: enp0s8
+  - ssh:
+      address: 192.168.1.26
+      user: root
+      port: 22
+      keyPath: ~/.ssh/id_rsa_k0s
+    role: worker
+    privateInterface: enp0s8
+

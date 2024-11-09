@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  # namespace: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:19.0.1
+        # image: docker.io/jboss/keycloak:19.0.1
+        args: ["start-dev"]
+        # resources:
+        #   limits:
+        #     cpu: "250m"
+        #     memory: "200Mi"
+        #   requests:
+        #     cpu: "250m"
+        #     memory: "200Mi"
+        env:
+        - name: KEYCLOAK_ADMIN
+          value: "admin"
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          value: "admin"
+        - name: DB_VENDOR
+          value: mysql
+        - name: DB_ADDR
+          value: mysql-svc.default.svc.cluster.local
+          # valueFrom:
+          #   secretKeyRef:
+          #     name: keycloak-db-secret
+          #     key: db-host
+        - name: DB_USERNAME
+          value: "keycloak-user"
+          # valueFrom:
+          #   secretKeyRef:
+          #     name: keycloak-db-secret
+          #     key: db-username
+        - name: DB_PASSWORD
+          value: "keycloak-password"
+          # valueFrom:
+          #   secretKeyRef:
+          #     name: keycloak-db-secret
+          #     key: db-password
+        - name: DB_DATABASE
+          value: "keycloak"
+          # valueFrom:
+          #   secretKeyRef:
+          #     name: keycloak-db-secret
+          #     key: db-name
+        - name: DB_PORT
+          value: "3306"
+        # - name: KC_PROXY
+        #   value: "edge"
+        ports:
+        - name: http
+          containerPort: 8080
+        # readinessProbe:
+        #   httpGet:
+        #     path: /realms/master
+        #     port: 8080
+          # initialDelaySeconds: 5
+          # periodSeconds: 3
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  # namespace: keycloak
+  labels:
+    app: keycloak
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: keycloak
+  type: NodePort
+  
